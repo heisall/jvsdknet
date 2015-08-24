@@ -393,6 +393,7 @@ FALSE  ß∞‹
 	JVCLIENT_API int __stdcall	JVC_WANGetChannelCount(char chGroup[4], int nYSTNO, int nTimeOutS);
 #endif
 
+JVCLIENT_API int JVC_WANGetBatchChannelCount(char *pChannelNum, int nYSTNOCnt, int nTimeOutS);
 /****************************************************************************
 *√˚≥∆  : JVC_StartBroadcastServer
 *π¶ƒ‹  : ø™∆Ù◊‘∂®“Âπ„≤•∑˛ŒÒ
@@ -647,6 +648,14 @@ FALSE  ß∞‹
 	JVCLIENT_API bool __stdcall	JVC_MOLANSerchDevice(char chGroup[4], int nYSTNO, int nCardType, int nVariety, char chDeviceName[100], int nTimeOut,unsigned int unFrequence);
 #endif
 
+/**
+ * stop lansearch
+ */
+#ifndef WIN32
+	JVCLIENT_API int JVC_MOStopLANSerchDevice();
+#else
+	JVCLIENT_API int __stdcall	JVC_MOStopLANSerchDevice();
+#endif
 /****************************************************************************
 *√˚≥∆  : JVC_RegisterCommonCallBack
 *π¶ƒ‹  : ‘∆ ”Õ®ø‚”Î”¶”√≤„ ˝æ›Ωªª• ªÿµ˜◊¢≤·
@@ -756,9 +765,9 @@ rtmpNormalData		 ”∆µ“Ù∆µ ˝æ›ªÿµ˜∫Ø ˝
 *****************************************************************************/
 
 #ifndef WIN32
-JVCLIENT_API bool JVC_ConnectRTMP(int nLocalChannel,char* strURL,FUNC_CRTMP_CONNECT_CALLBACK rtmpConnectChange,FUNC_CRTMP_NORMALDATA_CALLBACK rtmpNormalData);
+JVCLIENT_API bool JVC_ConnectRTMP(int nLocalChannel,char* strURL,FUNC_CRTMP_CONNECT_CALLBACK rtmpConnectChange,FUNC_CRTMP_NORMALDATA_CALLBACK rtmpNormalData,int nTimeout);
 #else
-JVCLIENT_API bool __stdcall JVC_ConnectRTMP(int nLocalChannel,char* strURL,FUNC_CRTMP_CONNECT_CALLBACK rtmpConnectChange,FUNC_CRTMP_NORMALDATA_CALLBACK rtmpNormalData);
+JVCLIENT_API bool __stdcall JVC_ConnectRTMP(int nLocalChannel,char* strURL,FUNC_CRTMP_CONNECT_CALLBACK rtmpConnectChange,FUNC_CRTMP_NORMALDATA_CALLBACK rtmpNormalData,int nTimeout);
 #endif
 
 /****************************************************************************
@@ -806,9 +815,9 @@ JVCLIENT_API void __stdcall JVC_ClearHelpCache(void);
  * failed:0
 */
 #ifndef WIN32
-    JVCLIENT_API int JVC_StopHelp()
+    JVCLIENT_API int JVC_StopHelp();
 #else
-    JVCLIENT_API int __stdcall  JVC_StopHelp()
+    JVCLIENT_API int __stdcall  JVC_StopHelp();
 #endif
     
 /*

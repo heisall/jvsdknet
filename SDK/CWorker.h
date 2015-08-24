@@ -343,8 +343,14 @@ public:
     
     
     CSERVER_PORT_LIST m_CServerPortList;//分控服务器与编组对应的端口
-    
+
+    void AddYstSvr(char* chGroup,STSERVER addr);//向chGroup组增加一个服务器地址
+	void AddYstSvr(char* chGroup,SOCKADDR_IN addr);//向chGroup组增加一个服务器地址
+	void ShowYstSvr(void);//显示所有组的云视通服务器列表
+	void GetGroupSvrList(char* chGroup,CYstSvrList &grouplist); //获取特定组的所有云视通服务器列表
+	int GetGroupSvrListIndex(char* chGroup);//获取特定组的所有云视通服务器列表索引，没有则新建
 public://///////////////////////////////////////////////////////////////////
+	CYstSvrGroupList m_YstSvrList; //云视通服务器所有编组列表
     FUNC_CCONNECT_CALLBACK m_pfConnect;
     FUNC_CNORMALDATA_CALLBACK m_pfNormalData;
     FUNC_CCHECKRESULT_CALLBACK m_pfCheckResult;

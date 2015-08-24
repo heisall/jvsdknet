@@ -186,7 +186,7 @@
 		A79B34671B28023F0000942E /* JVNError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JVNError.h; path = SDK/JVNError.h; sourceTree = SOURCE_ROOT; };
 		A79B34681B28023F0000942E /* JvnPakOp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JvnPakOp.cpp; path = SDK/JvnPakOp.cpp; sourceTree = SOURCE_ROOT; };
 		A79B34691B28023F0000942E /* JvnPakOp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JvnPakOp.h; path = SDK/JvnPakOp.h; sourceTree = SOURCE_ROOT; };
-		A79B346A1B28023F0000942E /* JVNSDKDef.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = JVNSDKDef.h; path = SDK/JVNSDKDef.h; sourceTree = SOURCE_ROOT; };
+		A79B346A1B28023F0000942E /* JVNSDKDef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JVNSDKDef.h; path = SDK/JVNSDKDef.h; sourceTree = SOURCE_ROOT; };
 		A79B346B1B28023F0000942E /* MakeHoleC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MakeHoleC.cpp; path = SDK/MakeHoleC.cpp; sourceTree = SOURCE_ROOT; };
 		A79B346C1B28023F0000942E /* MakeHoleC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MakeHoleC.h; path = SDK/MakeHoleC.h; sourceTree = SOURCE_ROOT; };
 		A79B346D1B28023F0000942E /* resource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = resource.h; path = SDK/resource.h; sourceTree = SOURCE_ROOT; };

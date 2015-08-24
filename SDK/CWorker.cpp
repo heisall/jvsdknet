@@ -115,6 +115,20 @@ CCWorker::CCWorker(int nLocalStartPort)
     {
         memset(m_chGroupList[i], 0, 4);
     }
+	m_YstSvrList.clear();
+	CYstSvrList list;
+
+	strcpy(list.chGroup,"A");
+	list.addrlist.clear();
+	m_YstSvrList.push_back(list);
+
+	strcpy(list.chGroup,"B");
+	list.addrlist.clear();
+	m_YstSvrList.push_back(list);
+
+	strcpy(list.chGroup,"S");
+	list.addrlist.clear();
+	m_YstSvrList.push_back(list);
     strcpy(m_chGroupList[0],"A");
     strcpy(m_chGroupList[1],"B");
     strcpy(m_chGroupList[2],"S");
@@ -3782,20 +3796,45 @@ UINT WINAPI CCWorker::GTProc(LPVOID pParam)
     
     //////////////////////////////////////////////////////////////////////////
     int l = 0;
-    ServerList SList;
-    for(l=0; l<pWorker->m_nGroupCount; l++)
-    {
-        if(!pWorker->DownLoadFirst(pWorker->m_chGroupList[l], SList, 1, 0))
-        {
-            pWorker->DownLoadFirst(pWorker->m_chGroupList[l], SList, 2, 0);
-            
-            OutputDebug("Download server %s.%d, size: %d",pWorker->m_chGroupList[l],__LINE__,SList.size());
-        }
-        else
-        {
-            OutputDebug("Download server %s.%d, size: %d",pWorker->m_chGroupList[l],__LINE__,SList.size());
-        }
-    }
+     ServerList SList;
+	for(l=0; l<pWorker->m_nGroupCount; l++)
+	{
+	#ifdef WIN32
+		if(WAIT_OBJECT_0 == WaitForSingleObject(pWorker->m_hGTEndEvent, 0))
+		{
+			_endthread();
+			return 0;
+		}
+	#endif
+		if(!pWorker->DownLoadFirst(pWorker->m_chGroupList[l], SList, 1, 0))
+		{
+		#ifdef WIN32
+			if(WAIT_OBJECT_0 == WaitForSingleObject(pWorker->m_hGTEndEvent, 0))
+			{
+				_endthread();
+				return 0;
+			}
+		#endif
+			if(pWorker->DownLoadFirst(pWorker->m_chGroupList[l], SList, 2, 0))
+			{
+				for (int i = 0; i < SList.size(); i++)
+				{
+					pWorker->AddYstSvr(pWorker->m_chGroupList[l],SList[i].addr);
+				}
+			}
+
+//			OutputDebug("Download server %s.%d",pWorker->m_chGroupList[l],__LINE__);
+		}
+		else
+		{
+			for (int i = 0; i < SList.size(); i++)
+			{
+				pWorker->AddYstSvr(pWorker->m_chGroupList[l],SList[i].addr);
+			}
+		}
+		SList.clear();
+	}
+	pWorker->ShowYstSvr();
     //////////////////////////////////////////////////////////////////////////
     
     DWORD dwbegin = CCWorker::JVGetTime();
@@ -9154,3 +9193,131 @@ int CCWorker::SendRemoveServer(char* pGroup,int nYst,char* pServer,int *nLen,int
 }
 
 
+void CCWorker::AddYstSvr(char* chGroup,SOCKADDR_IN addr)
+{
+	if(NULL == chGroup)
+	{
+		return;
+	}
+	STSERVER svraddr;
+	svraddr.buseful = false;
+	svraddr.nver = 0;
+	memcpy(&svraddr.addr,&addr,sizeof(SOCKADDR_IN));
+	int size = m_YstSvrList.size();
+	for(int i = 0; i < size; i++)
+	{
+		if(strcmp(chGroup,m_YstSvrList[i].chGroup) == 0)
+		{
+			int svrnum = m_YstSvrList[i].addrlist.size();
+			if(svrnum == 0)
+			{
+				m_YstSvrList[i].addrlist.push_back(svraddr);
+				return;
+			}
+			for(int j = 0; j < svrnum; j++)
+			{
+#ifdef WIN32
+				if(m_YstSvrList[i].addrlist[j].addr.sin_addr.S_un.S_addr == svraddr.addr.sin_addr.S_un.S_addr)
+#else 
+				if(m_YstSvrList[i].addrlist[j].addr.sin_addr.s_addr== svraddr.addr.sin_addr.s_addr)
+#endif
+				{
+					return;
+				}
+			}
+			m_YstSvrList[i].addrlist.push_back(svraddr);
+			return;
+		}
+	}
+	CYstSvrList list;
+	strcpy(list.chGroup,chGroup);
+	list.addrlist.push_back(svraddr);
+	m_YstSvrList.push_back(list);
+}
+void CCWorker::AddYstSvr(char* chGroup,STSERVER svraddr)
+{
+	if(NULL == chGroup)
+	{
+		return;
+	}
+	int size = m_YstSvrList.size();
+	for(int i = 0; i < size; i++)
+	{
+		if(strcmp(chGroup,m_YstSvrList[i].chGroup) == 0)
+		{
+			int svrnum = m_YstSvrList[i].addrlist.size();
+			if(svrnum == 0)
+			{
+				m_YstSvrList[i].addrlist.push_back(svraddr);
+				return;
+			}
+			for(int j = 0; j < svrnum; j++)
+			{
+#ifdef WIN32
+				if(m_YstSvrList[i].addrlist[j].addr.sin_addr.S_un.S_addr == svraddr.addr.sin_addr.S_un.S_addr)
+#else 
+				if(m_YstSvrList[i].addrlist[j].addr.sin_addr.s_addr== svraddr.addr.sin_addr.s_addr)
+#endif
+				{
+					return;
+				}
+			}
+			m_YstSvrList[i].addrlist.push_back(svraddr);
+			return;
+		}
+	}
+	CYstSvrList list;
+	strcpy(list.chGroup,chGroup);
+	list.addrlist.push_back(svraddr);
+	m_YstSvrList.push_back(list);
+}
+
+void CCWorker::ShowYstSvr(void)
+{
+	return;
+	int size = m_YstSvrList.size();
+	for(int i = 0; i < size; i++)
+	{
+		printf("%s:%d..............**********.........group %s svrlistsize:%d\n",__FILE__,__LINE__,m_YstSvrList[i].chGroup,m_YstSvrList[i].addrlist.size());
+		for(int j = 0; j < m_YstSvrList[i].addrlist.size(); j++)
+		{
+			printf("group:%s, addr: %s\n",m_YstSvrList[i].chGroup,inet_ntoa(m_YstSvrList[i].addrlist[j].addr.sin_addr));
+		}
+	}
+}
+int CCWorker::GetGroupSvrListIndex(char* chGroup)
+{
+	if(NULL == chGroup)
+	{
+		return -1;
+	}
+	int size = m_YstSvrList.size();
+	for(int i = 0; i < size; i++)
+	{
+		if(strcmp(chGroup,m_YstSvrList[i].chGroup) == 0)
+		{
+			return i;
+		}
+	}
+	CYstSvrList list;
+	strcpy(list.chGroup,chGroup);
+	list.addrlist.clear();
+	m_YstSvrList.push_back(list);
+	return size;
+}
+void CCWorker::GetGroupSvrList(char* chGroup,CYstSvrList &grouplist)
+{
+	if(NULL == chGroup)
+	{
+		return;
+	}
+	int size = m_YstSvrList.size();
+	for(int i = 0; i < size; i++)
+	{
+		if(strcmp(chGroup,m_YstSvrList[i].chGroup) == 0)
+		{
+			grouplist = m_YstSvrList[i];
+			return;
+		}
+	}
+}

@@ -292,6 +292,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
         
         //	BOOL bInfo = FALSE;//用于避免云视通连接时重复提示
         //OutputDebugString("ccoldchannel_cannproc...........1\n");
+        int lastStatus = 0;
         while(TRUE)
         {
 #ifndef WIN32
@@ -311,7 +312,12 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                 break;
             }
 #endif
-            
+            if (lastStatus ==0) {
+                writeLog("ccoldchannel: pWorker->m_nStatus %d ,line: %d",pWorker->m_nStatus,__LINE__);
+            }else if(lastStatus != pWorker->m_nStatus){
+                writeLog("ccoldchannel: pWorker->m_nStatus %d ,line: %d",pWorker->m_nStatus,__LINE__);
+            }
+            lastStatus = pWorker->m_nStatus;
             switch(pWorker->m_nStatus)
             {
                 case WAIT_IPRECHECK://等待IP直连预验证消息超时
@@ -916,6 +922,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                     }
                     else
                     {//发送身份验证消息失败 尝试其他服务器
+                        writeLog("ccoldchannel: error SendPwdCheck, line: %d",__LINE__);
                         pWorker->m_nStatus = FAILD;//NEW_TURN;
                         
                         pWorker->SendData(JVN_CMD_DISCONN, NULL, 0);
@@ -987,6 +994,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                     {//接收数据
                         int nPWData = 0;
                         nret = pWorker->RecvPWCheck(nPWData);
+                        writeLog("ccoldchannel: RecvPWCheck nret: %d,line: %d",nret,__LINE__);
                         if(nret == 1)
                         {//验证通过 连接成功建立
                             OutputDebug("old pwd ok. line: %d",__LINE__);
@@ -1101,16 +1109,20 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
             {
                 char chtmp[10]={0};
                 chtmp[0] = JVN_CMD_MOTYPE;
-                CCChannel::udpsenddata(m_pChannel->m_ServerSocket, chtmp, 5, TRUE);
+                
+                int ret = CCChannel::udpsenddata(m_pChannel->m_ServerSocket, chtmp, 5, TRUE);
+                writeLog("**********ccoldchannel sebd JVN_CMD_MoTYPE ret: %d,line: %d",ret,__LINE__);
             }
             
             if(0 >= CCChannel::udpsenddata(m_pChannel->m_ServerSocket, (char *)data, nNLen + nWLen + 9, TRUE))
             {
+                 writeLog("**********ccoldchannel sebd JVN_CMD_MoTYPE line: %d,error ",__LINE__);
                 return FALSE;
             }
             else
             {
                 //			OutputDebug("%d send old pwd.",m_pChannel->m_stConnInfo.nLocalChannel);
+                writeLog("**********ccoldchannel sebd JVN_CMD_MoTYPE line: %d,success ",__LINE__);
                 return TRUE;
             }
         }
@@ -1238,13 +1250,17 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
         else
         {//UDP连接
             m_pChannel->m_nFYSTVER = UDT::getystverF(m_pChannel->m_ServerSocket);//获取远端协议版本
+            writeLog("ccoldchannel: m_pChannel->m_nFYSTVER :%d,line: %d",m_pChannel->m_nFYSTVER,__LINE__);
             if(m_pChannel->m_nFYSTVER >= JVN_YSTVER4)
             {//支持msg
-                if(0 < (rs = UDT::recvmsg(m_pChannel->m_ServerSocket, (char *)m_precBuf, JVNC_DATABUFLEN)))
+                rs = UDT::recvmsg(m_pChannel->m_ServerSocket, (char *)m_precBuf, JVNC_DATABUFLEN);
+                writeLog("ccoldchannel rs: %d, line: %d",rs,__LINE__);
+                if(0 < rs)
                 {//收到数据
                     nLen=-1;
                     BYTE uchtype = 0;
                     uchtype = m_precBuf[0];
+                    writeLog("ccoldchannel: uchType: %d, line: %d",uchtype,__LINE__);
                     if(uchtype == JVN_RSP_NOSERVER)
                     {
                         return -10;//无通道服务
@@ -1260,6 +1276,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                         {
                             if(m_bByStreamServer)
                             {
+                                writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                 return -1;
                             }
                             
@@ -1281,6 +1298,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                             
                             if(m_bByStreamServer)
                             {
+                                writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                 return -1;
                             }
                             
@@ -1336,7 +1354,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                                     m_bByStreamServer=FALSE;
                                     SendData(JVN_CMD_DISCONN, NULL, 0);
                                     CCWorker::jvc_sleep(1);
-                                    
+                                    writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                     return -1;
                                 }
                             }
@@ -1345,7 +1363,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                                 m_bByStreamServer=FALSE;
                                 SendData(JVN_CMD_DISCONN, NULL, 0);
                                 CCWorker::jvc_sleep(1);
-                                
+                                writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                 return -1;
                             }
                         }
@@ -1371,6 +1389,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                         {
                             if(UDT::ERROR == (rs = UDT::recv(m_pChannel->m_ServerSocket, (char *)&m_precBuf[rsize], 4 - rsize, 0)))
                             {
+                                writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                 return -1;
                             }
                             else if(rs == 0)
@@ -1387,11 +1406,13 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                         {
                             if(m_bByStreamServer)
                             {
+                                writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                 return -1;
                             }
                             
                             if(uchtype == JVN_RSP_CHECKPASST)
                             {
+                                
                                 return 1;
                             }
                             else
@@ -1407,6 +1428,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                             {
                                 if(UDT::ERROR == (rs = UDT::recv(m_pChannel->m_ServerSocket, (char *)&m_precBuf[rsize], nLen - rsize, 0)))
                                 {
+                                    writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                     return -1;
                                 }
                                 else if(rs == 0)
@@ -1422,6 +1444,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                             
                             if(m_bByStreamServer)
                             {
+                                writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                 return -1;
                             }
                             
@@ -1443,6 +1466,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                         {
                             if(UDT::ERROR == (rs = UDT::recv(m_pChannel->m_ServerSocket, (char *)&m_precBuf[rsize], 4 - rsize, 0)))
                             {
+                                writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                 return -1;
                             }
                             else if(rs == 0)
@@ -1463,6 +1487,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                             {
                                 if (UDT::ERROR == (rs = UDT::recv(m_pChannel->m_ServerSocket, (char *)&m_precBuf[rsize], nLen - rsize, 0)))
                                 {
+                                    writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                     return -1;
                                 }
                                 else if(rs == 0)
@@ -1504,7 +1529,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                                     m_bByStreamServer=FALSE;
                                     SendData(JVN_CMD_DISCONN, NULL, 0);
                                     CCWorker::jvc_sleep(1);
-                                    
+                                    writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                     return -1;
                                 }
                             }
@@ -1513,7 +1538,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                                 m_bByStreamServer=FALSE;
                                 SendData(JVN_CMD_DISCONN, NULL, 0);
                                 CCWorker::jvc_sleep(1);
-                                
+                                writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
                                 return -1;
                             }
                         }
@@ -1522,7 +1547,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
             }
             
         }
-        
+        writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
         return -1;
     }
     
@@ -1725,6 +1750,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
             memset(data, 0, sizeof(data));
             switch(uchType)
             {
+				
                 case JVN_REQ_CHECK://请求录像检索
                 {
                     if(pBuffer != NULL && nSize == 2*JVN_ABCHECKPLEN)

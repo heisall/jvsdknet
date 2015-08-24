@@ -114,6 +114,11 @@
 
 #define  DIRECT_CONNECT		  54//根据提供的参数直接连接
 
+#define  REQ_FORWARD_TURNADDR		60	// 请求云视通服务器转发请求turn地址
+#define  RECV_TURNLIST  61// 取得转发地址列表
+#define  REQ_DEV_PUBADDR  62// 请求设备公网地址
+#define  JVN_CHECK_DEVADDR        0x203
+#define JVN_CONN_DEV            0x204
 /**********************************************************************/
 
 typedef struct NAT//分控所在的NAT结构
@@ -143,6 +148,7 @@ typedef struct STSERVER
 {
     SOCKADDR_IN addr;//服务器地址
     BOOL buseful;//服务器是否已进行过尝试
+	BOOL bOK;//服务器是否可通
     int nver;//协议版本
 }STSERVER;
 
@@ -241,6 +247,17 @@ typedef struct STYSTNOINFO
 }STYSTNOINFO;//云视通号码信息
 typedef ::std::vector<STYSTNOINFO> YSTNOList;
 
+typedef struct CYstSvrList
+{
+	ServerList addrlist;
+	char chGroup[10];
+	CYstSvrList()
+	{
+		memset(chGroup,0,sizeof(chGroup));
+		addrlist.clear();
+	}
+}CYstSvrList;
+typedef ::std::vector<CYstSvrList> CYstSvrGroupList; // 云视通服务器所有编组列表
 
 class CCWorker;
 class CCOldChannel;
@@ -276,7 +293,12 @@ public:
     static BOOL ServerIsExist(STCONNPROCP *pstConn,char* pServer);//判断服务器是否已经返回结果
     
     void UpdateYSTNOList();//更新连接地址
-    
+
+    int SelectAliveSvrList(ServerList OnlineSvrList);// 挑选出畅通的服务器地址列表 m_AliveSvrList，返回畅通服务器数量
+	void ReqTurnAddrViaSvr(void);// 向畅通的服务器地址转发请求转发地址
+	BOOL SendReqTurnAddr(SOCKADDR_IN addr,SOCKET stmp);
+	int RcvTurnAddrList(SOCKET stmp);
+	void AddYstSvr(STSERVER svr);
 public://////////////////////////////////////////////////////////////////////////
     DWORD m_dwLastUpdateTime;//最后更新时间，加个间隔没必要经常更新
     BOOL m_bIsTurn;
@@ -366,6 +388,9 @@ public://///////////////////////////////////////////////////////////////////////
     SOCKET m_sQueryIndexSocket;//查询检索服务器的套接字
     int ReceiveIndexFromServer(STCONNPROCP *pstConn,BOOL bFirstCall);
     
+	CYstSvrList m_GroupSvrList; //组全部服务列表
+	CYstSvrList m_AliveSvrList;// 可能通畅的服务器地址列表，随机排序
+	ServerList m_TurnSvrAddrList; // 转发服务器地址列表
 private://////////////////////////////////////////////////////////////////////////
     BOOL SendDataTCP(BYTE uchType, BYTE *pBuffer,int nSize);
     
@@ -415,6 +440,12 @@ private:////////////////////////////////////////////////////////////////////////
     void DealHelpOK(STCONNPROCP *pstConn);
     
     void DealWaitSerREQ(STCONNPROCP *pstConn);
+	int WaitDevPubAddr(SOCKET stmp,ServerList &list);
+	int WaitTurnAddrList(STCONNPROCP *pstConn);
+	void DealWaitReqDevPubAddr(STCONNPROCP *pstConn);
+	int DealRcvCompleteTurn(STCONNPROCP *pstConn);
+	void DealReqCompleteTurn(STCONNPROCP *pstConn);
+
     void DealWaitSerRSP(STCONNPROCP *pstConn);
     void DealNewTCP(STCONNPROCP *pstConn);//直接TCP连接
     void DealNewIP(STCONNPROCP *pstConn);
@@ -437,6 +468,7 @@ private:////////////////////////////////////////////////////////////////////////
     void DealNEWTURN(STCONNPROCP *pstConn);
     void DealWaitTURN(STCONNPROCP *pstConn);
     void DealRecvTURN(STCONNPROCP *pstConn);
+	BOOL DealRecvTURNLIST(STCONNPROCP *pstConn);
     void DealWaitTSReCheck(STCONNPROCP *pstConn);
     void DealWaitTSWConnectOldF(STCONNPROCP *pstConn);
     void DealWaitTSPWCheck(STCONNPROCP *pstConn);
