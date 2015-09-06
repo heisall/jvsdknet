@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		A783407F1B2EC70100D71C88 /* CHelpCtrl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A783407D1B2EC70100D71C88 /* CHelpCtrl.cpp */; };
 		A78340801B2EC70100D71C88 /* CVirtualChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A783407E1B2EC70100D71C88 /* CVirtualChannel.cpp */; };
-		A78379D51B2EC16900D6B1D3 /* CBufferCtrl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A78379D31B2EC16900D6B1D3 /* CBufferCtrl.cpp */; };
 		A79B34251B2802000000942E /* AmfSerializer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A79B33E71B2802000000942E /* AmfSerializer.cpp */; };
 		A79B34261B2802000000942E /* FIFO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A79B33E91B2802000000942E /* FIFO.cpp */; };
 		A79B34271B2802000000942E /* JvRtmpClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A79B33EF1B2802000000942E /* JvRtmpClient.cpp */; };
@@ -87,7 +86,6 @@
 		A783407C1B2EC62400D71C88 /* Def.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Def.h; path = SDK/Def.h; sourceTree = SOURCE_ROOT; };
 		A783407D1B2EC70100D71C88 /* CHelpCtrl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CHelpCtrl.cpp; path = SDK/CHelpCtrl.cpp; sourceTree = SOURCE_ROOT; };
 		A783407E1B2EC70100D71C88 /* CVirtualChannel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CVirtualChannel.cpp; path = SDK/CVirtualChannel.cpp; sourceTree = SOURCE_ROOT; };
-		A78379D31B2EC16900D6B1D3 /* CBufferCtrl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CBufferCtrl.cpp; path = ../../jni/jvnetsdk2.0.76.3.38/SDK/CBufferCtrl.cpp; sourceTree = "<group>"; };
 		A79B33CC1B2801660000942E /* libjvnetsdkv2.0.76.3.78.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libjvnetsdkv2.0.76.3.78.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		A79B33E71B2802000000942E /* AmfSerializer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AmfSerializer.cpp; path = RTMP/AmfSerializer.cpp; sourceTree = SOURCE_ROOT; };
 		A79B33E81B2802000000942E /* AmfSerializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AmfSerializer.h; path = RTMP/AmfSerializer.h; sourceTree = SOURCE_ROOT; };
@@ -347,7 +345,6 @@
 				A783407D1B2EC70100D71C88 /* CHelpCtrl.cpp */,
 				A783407E1B2EC70100D71C88 /* CVirtualChannel.cpp */,
 				A783407C1B2EC62400D71C88 /* Def.h */,
-				A78379D31B2EC16900D6B1D3 /* CBufferCtrl.cpp */,
 				A79B34481B28023F0000942E /* CBufferCtrl.cpp */,
 				A79B34491B28023F0000942E /* CBufferCtrl.h */,
 				A79B344A1B28023F0000942E /* CChannel.cpp */,
@@ -486,7 +483,6 @@
 				A79B34261B2802000000942E /* FIFO.cpp in Sources */,
 				A79B343D1B2802000000942E /* srs_protocol_utility.cpp in Sources */,
 				A79B343B1B2802000000942E /* srs_protocol_rtmp.cpp in Sources */,
-				A78379D51B2EC16900D6B1D3 /* CBufferCtrl.cpp in Sources */,
 				A79B34451B2802230000942E /* CRtmpChannel.cpp in Sources */,
 				A79B34871B28023F0000942E /* SUpnpCtrl.cpp in Sources */,
 				A79B347C1B28023F0000942E /* CPartner.cpp in Sources */,
@@ -581,7 +577,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;
@@ -619,7 +615,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;

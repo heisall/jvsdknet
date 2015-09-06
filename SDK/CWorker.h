@@ -31,7 +31,7 @@ char* GetPrivateString(char* lpAppName,char* lpKeyName,char* lpValue,char* lpFil
 //#define JVC_MSS   20000//10000
 
 #define JVC_LANTOOL_TIME  10000//æ÷”ÚÕ¯…˙≤˙π§æﬂÀ—À˜∆µ¬ øÿ÷∆
-#define JVCLIENT_VERSION "v2.0.76.3.42[private:v2.0.75.13 20150710.1]"//此版本号仅用于linux打印
+#define JVCLIENT_VERSION "v2.0.76.3.46[private:v2.0.75.14 20150926]"//此版本号仅用于linux打印
 #define JVCLIENT_VERSION_N 2007513
 
 #define JVN_YSTVER 20140319//20130116
@@ -225,6 +225,8 @@ public:
     void EnableLog(bool bEnable);
     void SetLanguage(int nLgType);
     void ClearBuffer(int nLocalChannel);//«Âø’±æµÿª∫¥Ê
+    
+    int ReadSerListInFile(char chGroup[4],ServerList &list);
     
     BOOL StartLANSerchServer(int nLPort, int nServerPort);
     void StopLANSerchServer();

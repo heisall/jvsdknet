@@ -8945,42 +8945,66 @@ char* Get1IpByDomain(char* pServer,BOOL& bIsDomain)
     return strIP;
 }
 
-
 int CCWorker::SetSelfServer(char* pGroup,char* pServer)
 {
-    CSELF_DEFINE_SERVER server = {0};
-    BOOL bIsDomain = FALSE;
-    char strIP[20] = {0};
-    strcpy(strIP,Get1IpByDomain(pServer,bIsDomain));
-    if(bIsDomain)
+    writeLog("SetSelfServer pGroup:%s pServer:%s",pGroup?pGroup:"",pServer);
+    if(pGroup&&strlen(pGroup)!=0)
     {
-        server.bIsDomain = TRUE;
-        strcpy(server.strDomain,pServer);
-    }
-    strcpy(server.strGroup,pGroup);
-    strcpy(server.strIP,strIP);
-    for(int i = 0;i < m_CServerPortList.size();i ++)
-    {
+        OutputDebug("SetSelfServer %s  %s",pGroup,pServer);
+        CSELF_DEFINE_SERVER server = {0};
+        BOOL bIsDomain = FALSE;
+        char strIP[20] = {0};
+        strcpy(strIP,Get1IpByDomain(pServer,bIsDomain));
+        if(bIsDomain)
+        {
+            server.bIsDomain = TRUE;
+            strcpy(server.strDomain,pServer);
+        }
+        strcpy(server.strGroup,pGroup);
+        strcpy(server.strIP,strIP);
+        for(int i = 0;i < m_CServerPortList.size();i ++)
+        {
 #ifndef WIN32
-        if(strcasecmp(m_CServerPortList[i].strGroup,pGroup) == 0)
+            if(strcasecmp(m_CServerPortList[i].strGroup,pGroup) == 0)
 #else
-            if(stricmp(m_CServerPortList[i].strGroup,pGroup) == 0)
+                if(stricmp(m_CServerPortList[i].strGroup,pGroup) == 0)
 #endif
-            {
-                server.nPort = m_CServerPortList[i].nServerPort;
-                break;
-            }
+                {
+                    server.nPort = m_CServerPortList[i].nServerPort;
+                    break;
+                }
+            
+        }
         
+        if(server.nPort != 0)
+        {
+            m_CSelfDefineServer.push_back(server);
+            return 1;
+        }
     }
-    if(server.nPort != 0)
+    else//设置全部组
     {
-        m_CSelfDefineServer.push_back(server);
-        return 1;
+        OutputDebug("SetSelfServer All  %s",pServer);
+        BOOL bIsDomain = FALSE;
+        char strIP[20] = {0};
+        strcpy(strIP,Get1IpByDomain(pServer,bIsDomain));
+        for(int i = 0;i < m_CServerPortList.size();i ++)
+        {
+            CSELF_DEFINE_SERVER server = {0};
+            if(bIsDomain)
+            {
+                server.bIsDomain = TRUE;
+                strcpy(server.strDomain,pServer);
+            }
+            strcpy(server.strGroup,m_CServerPortList[i].strGroup);
+            strcpy(server.strIP,strIP);
+            server.nPort = m_CServerPortList[i].nServerPort;
+            
+            m_CSelfDefineServer.push_back(server);
+        }
     }
     return 0;
 }
-
-
 
 int CCWorker::SendSetServer(char* pGroup,int nYst,char* pServer,int *nLen,int nTimeOut)
 {
@@ -9307,17 +9331,166 @@ int CCWorker::GetGroupSvrListIndex(char* chGroup)
 }
 void CCWorker::GetGroupSvrList(char* chGroup,CYstSvrList &grouplist)
 {
-	if(NULL == chGroup)
-	{
-		return;
-	}
-	int size = m_YstSvrList.size();
-	for(int i = 0; i < size; i++)
-	{
-		if(strcmp(chGroup,m_YstSvrList[i].chGroup) == 0)
-		{
-			grouplist = m_YstSvrList[i];
-			return;
-		}
-	}
+    if(NULL == chGroup)
+    {
+        return;
+    }
+    int size = m_YstSvrList.size();
+    writeLog(".......................size %d",size);
+    if(size < 1)
+    {
+        int ret = ReadSerListInFile(chGroup,grouplist.addrlist);
+        writeLog("..*********************..readfiler return:%d",ret);
+        return;
+    }
+    
+    for(int i = 0; i < size; i++)
+    {
+        if(strcmp(chGroup,m_YstSvrList[i].chGroup) == 0)
+        {
+            grouplist = m_YstSvrList[i];
+            if(grouplist.addrlist.size() == 0)
+            {
+                int ret = ReadSerListInFile(chGroup,grouplist.addrlist);
+                writeLog("..*********************..readfiler return:%d",ret);
+            }
+            return;
+        }
+    }
+    
+    if(grouplist.addrlist.size() < 1)
+    {
+        int ret = ReadSerListInFile(chGroup,grouplist.addrlist);
+        writeLog("..*********************..readfiler return:%d",ret);
+    }
 }
+int  CCWorker::ReadSerListInFile(char chGroup[4],ServerList &list)
+{
+    char acBuff[MAX_PATH] = {0};
+    char chCurPath[MAX_PATH] = {0};
+    int nSerCount = 0;
+    GetCurrentPath(chCurPath);
+    
+#ifndef WIN32
+    if(strlen(m_chLocalPath) <= 0)
+    {//没有明确指定路径，则在dvr下采用固定路径而不是实际当前路径
+        sprintf(acBuff, "%s/yst_%s.dat", chCurPath,chGroup);
+    }
+    else
+    {//使用指定的路径
+        sprintf(acBuff, "%s/yst_%s.dat", m_chLocalPath,chGroup);
+    }
+#else
+    sprintf(acBuff, "%s\\yst_%s.dat", chCurPath,chGroup);
+#endif
+    
+    writeLog("readserlist, acBuff:%s,m_chLocalPath:%s",acBuff,m_chLocalPath);
+    
+    char chread[10240]={0};
+    int nread=0;
+    char stName[200] = {0};
+    sprintf(stName, "%s%s.dat","YST_",chGroup);
+    
+    STSERVER ser;
+    ser.addr.sin_family = AF_INET;
+    unsigned short port = 0;
+    char chPort[16] = {0};
+    
+#ifdef MOBILE_CLIENT //手机客户端，从内存读取
+    nread = ReadMobileFile(stName,chread,10240);
+    //	m_pfWriteReadData(2,(unsigned char *)chGroup,"YST_",(unsigned char *)chread,&nread);//YST read 杩欓噷璋冪敤鍥炶皟鍑芥暟
+    if(nread > 0)
+    {
+        int npostmp = 0;
+        memset(acBuff, 0, MAX_PATH);
+        while(MOGetLine(chread,nread,npostmp,acBuff))//YST
+        {
+            char chIP[20] = {0};
+            //服务器地址解密
+            for (unsigned int m=0; m<strlen(acBuff); m++)
+            {
+                acBuff[m] ^= m;
+            }
+            STSIP stIP;
+            memset(stIP.chIP, 0, 16);
+            int i=0;
+            char chPort[16] = {0};
+            for(i=0; i<MAX_PATH; i++)
+            {
+                if(acBuff[i] == ':' || acBuff[i] == '\0')
+                {
+                    break;
+                }
+            }
+            //memcpy(stIP.chIP, acBuff, i);
+            //memcpy(chPort, &acBuff[i+1], strlen(acBuff)-i-1);
+            if(i> 0)
+            {
+                memcpy(chIP, acBuff, i);
+                memcpy(chPort, &acBuff[i+1], strlen(acBuff)-i+1);
+            }
+            port = atoi(chPort);
+            if(port > 0)
+            {
+#ifdef WIN32
+                ser.addr.sin_addr.S_un.S_addr = inet_addr(chIP);
+#else
+                ser.addr.sin_addr.s_addr= inet_addr(chIP);
+#endif
+                ser.addr.sin_port = htons(port);
+                list.push_back(ser);
+                nSerCount++;
+            }
+        }
+    }
+    
+#else//其他情况，从文件读取
+    //找到记录,采取先读后下载方式
+    ::std::string line;
+    ::std::ifstream localfile(acBuff);
+    while(::std::getline(localfile,line))
+    {
+        char chIP[20] = {0};
+        port = 0;
+        memset(acBuff, 0, MAX_PATH);
+        line.copy(acBuff,MAX_PATH,0);
+        //服务器地址解密
+        for (unsigned int m=0; m<strlen(acBuff); m++)
+        {
+            acBuff[m] ^= m;
+        }
+        int i=0;
+        
+        for(i=0; i<MAX_PATH; i++)
+        {
+            if(acBuff[i] == ':' || acBuff[i] == '\0')
+            {
+                break;
+            }
+        }
+        if(i > 0)
+        {
+            memcpy(chIP, acBuff, i);
+            memcpy(chPort, &acBuff[i+1], strlen(acBuff)-i+1);
+        }
+        
+        port = atoi(chPort);
+        //outdbgs(0,".........................read ip:%s,port:%d,acbuff:%s,i:%d",chIP,port,acBuff,i);
+        writeLog("...chIP:%s,port:%d",chIP,port);
+        //writeLog("...acBuff:%s",acBuff);
+        if(port > 0)
+        {
+#ifdef WIN32
+            ser.addr.sin_addr.S_un.S_addr = inet_addr(chIP);
+#else
+            ser.addr.sin_addr.s_addr= inet_addr(chIP);
+#endif
+            ser.addr.sin_port = htons(port);
+            list.push_back(ser);
+            nSerCount++;
+        }
+    }
+#endif
+    return nSerCount;
+}
+

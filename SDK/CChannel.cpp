@@ -911,6 +911,8 @@ void CCChannel::StartConnThread()
     void CCChannel::DealWaitIndexSerREQ(STCONNPROCP *pstConn)
     {
         int ncount = m_ISList.size();
+        writeLog("checksvrsize:%d",ncount);
+
         if(ncount == 0)//检索服务器没有下载到文件
         {
             m_SList.clear();
@@ -960,6 +962,8 @@ void CCChannel::StartConnThread()
         for(int i=0; i<ncount; i++)
         {
             sendtoclient(m_sQueryIndexSocket, (char*)pstConn->chdata, 13, 0, (sockaddr *)&m_ISList[i].addr, sizeof(sockaddr_in), 1);
+            writeLog("send check onliesvradddr to [%s:%d]",inet_ntoa(m_ISList[i].addr.sin_addr),ntohs(m_ISList[i].addr.sin_port));
+
         }
         m_nStatus = WAIT_INDEXSER_RSP;//开始等待服务器响应
         m_dwStartTime = CCWorker::JVGetTime();
@@ -3730,37 +3734,37 @@ void CCChannel::DealWaitIndexSerRSP(STCONNPROCP *pstConn)
         {
             int ncount = m_SList.size();
             OutputDebug("DealNEWTURN  1 count: %d",ncount);
-            writeLog("m_SList.size();  count:%d",ncount);
-		for(int i=0; i<ncount; i++)
-		{
-			if(m_SList[i].buseful)
-			{//开始尝试请求主控地址
-//				m_SList[i].addr.sin_addr.s_addr = inet_addr("60.217.227.239");
-//				m_SList[i].addr.sin_port = htons(9110);
-				if(SendSTURN(m_SList[i].addr, i, pstConn->chError))
-				{//向服务器发送请求成功
-					m_nStatus = WAIT_TURN;
-					m_nRequestTurnTimes = 0;
-					m_dwStartTime = CCWorker::JVGetTime();
-					m_dwSendTurnTime = m_dwStartTime;
-					bfind = TRUE;
-                        OutputDebug("请求转发地址.....%d",i);
-                        writeLog("请求转发地址.....%d, requestServerIp: %s",i,inet_ntoa(m_SList[i].addr.sin_addr),ntohs(m_SList[i].addr.sin_port));
-                        break;
-                    }
-                    else
-                    {//向服务器发送请求失败 尝试下一个服务器
-                        m_SList[i].buseful = FALSE;
-                    }
-                }
-            }
+            writeLog(".................m_SList.size();  count:%d",ncount);
+			for(int i=0; i<ncount; i++)
+			{
+				if(m_SList[i].buseful)
+				{//开始尝试请求主控地址
+	//				m_SList[i].addr.sin_addr.s_addr = inet_addr("60.217.227.239");
+	//				m_SList[i].addr.sin_port = htons(9110);
+					if(SendSTURN(m_SList[i].addr, i, pstConn->chError))
+					{//向服务器发送请求成功
+						m_nStatus = WAIT_TURN;
+						m_nRequestTurnTimes = 0;
+						m_dwStartTime = CCWorker::JVGetTime();
+						m_dwSendTurnTime = m_dwStartTime;
+						bfind = TRUE;
+							OutputDebug("请求转发地址.....%d",i);
+							writeLog("请求转发地址.....%d, requestServerIp: %s",i,inet_ntoa(m_SList[i].addr.sin_addr),ntohs(m_SList[i].addr.sin_port));
+							break;
+						}
+						else
+						{//向服务器发送请求失败 尝试下一个服务器
+							m_SList[i].buseful = FALSE;
+						}
+					}
+			}
         }
-        if(!bfind)
+        if(!bfind || m_bPassWordErr)
         {	
 #ifdef MOBILE_CLIENT
           //  g_dbg.jvcout(OUT_ON_EVENT,__FILE__,__LINE__,__FUNCTION__,"JOV lib nRecvLen:%d, type:0x%x!\n", nRecvLen, nType);
-			g_dbg.jvcout(OUT_ON_EVENT,__FILE__,__LINE__,"","...........******........no find online svr return, online svrnum:%d,totao:%d",m_SList.size(),m_GroupSvrList.addrlist.size());
-			if(m_SList.size() > 0)
+			writeLog("...........******........no find online svr return, online svrnum:%d,totao:%d",m_SList.size(),m_GroupSvrList.addrlist.size());
+			if((m_SList.size() > 0) && (!m_bPassWordErr))
 			{
 				if(m_GroupSvrList.addrlist.size() == 0)
 				{
@@ -4617,7 +4621,7 @@ void CCChannel::DealWaitIndexSerRSP(STCONNPROCP *pstConn)
         while(TRUE)
         {
 #ifndef WIN32
-            if(pWorker->m_bExit || pWorker->m_bEndC)
+
             {
                 break;
             }
@@ -14326,6 +14330,11 @@ void CCChannel::AddCSelfServer()
 {
 	for(int j = 0;j < m_pWorker->m_CSelfDefineServer.size();j ++)
 	{
+        char strG[4] = {0};
+        strcpy(strG,m_pWorker->m_CSelfDefineServer[j].strGroup);
+        if(strcmp(strG,m_stConnInfo.chGroup) != 0)
+            continue;
+        
 		char ch2[50]={0};
 		sprintf(ch2,"%s:%d",m_pWorker->m_CSelfDefineServer[j].strIP,m_pWorker->m_CSelfDefineServer[j].nPort);
 		int nCount = m_SList.size();
@@ -14521,7 +14530,7 @@ void CCChannel::ReqTurnAddrViaSvr(void)
 	SOCKADDR_IN addrSrv;
 #ifndef WIN32
 	//addrSrv.sin_addr.s_addr = m_pWorker->m_addrLocal.sin_addr.s_addr;
-	addrSrv.sin_addr.s_addr =  htonl(INADDR_ANY);
+	addrSrv.sin_addr.s_addr = htonl(INADDR_ANY);
 #else
 	//addrSrv.sin_addr.S_un.S_addr = m_pWorker->m_addrLocal.sin_addr.S_un.S_addr;
 	addrSrv.sin_addr.S_un.S_addr = m_pWorker->GetCurEthAddr();
@@ -14542,11 +14551,17 @@ void CCChannel::ReqTurnAddrViaSvr(void)
 	//绑定套接字
 	bind(stmp, (SOCKADDR *)&addrSrv, sizeof(SOCKADDR));
 
-	SOCKADDR_IN addrs;
+//	SOCKADDR_IN addrs;
 
 	int nsize = m_AliveSvrList.addrlist.size();
 	for(int i = 0; i < nsize; i++)
 	{
+		if(m_bExit)
+		{
+			writeLog("..............****************..........FIND EXITFLAG !");
+			m_nStatus = FAILD;
+			return;
+		}
 		srand((int)time(0));
 		int index = 0;
 		int cursize = m_AliveSvrList.addrlist.size();
@@ -14561,6 +14576,12 @@ void CCChannel::ReqTurnAddrViaSvr(void)
 			DWORD start = CCWorker::JVGetTime();
 			while(1)
 			{
+				if(m_bExit)
+				{
+					writeLog("..............****************..........FIND EXITFLAG !");
+					m_nStatus = FAILD;
+					return;
+				}
 				if(CCWorker::JVGetTime() - start > 3000)
 				{
 					writeLog("...................RcvTurnAddrList timeout !");
@@ -14590,7 +14611,7 @@ void CCChannel::ReqTurnAddrViaSvr(void)
 	/*
 	for(int i = 0; i < m_AliveSvrList.addrlist.size(); i++) // 分别向通畅的服务器列表发转发请求
 	{
-		writeLog("ready to send reqturnadddr to [%s:%d],size:%d,i:%d",inet_ntoa(m_AliveSvrList.addrlist[i].addr.sin_addr),ntohs(m_AliveSvrList.addrlist[i].addr.sin_port),m_AliveSvrList.addrlist.size(),i);
+		outdbgs(0,"ready to send reqturnadddr to [%s:%d],size:%d,i:%d",inet_ntoa(m_AliveSvrList.addrlist[i].addr.sin_addr),ntohs(m_AliveSvrList.addrlist[i].addr.sin_port),m_AliveSvrList.addrlist.size(),i);
 		if(SendReqTurnAddr(m_AliveSvrList.addrlist[i].addr,stmp))
 		{
 			int nsize = RcvTurnAddrList(stmp);
@@ -14614,12 +14635,14 @@ void CCChannel::ReqTurnAddrViaSvr(void)
 	if(JVN_LANGUAGE_CHINESE == m_pWorker->m_nLanguage)
 	{
 			char chMsg[] = "请求转发地址失败 !";
+//			strcpy(m_strConnectError,chMsg);
 			m_pWorker->ConnectChange(m_nLocalChannel,JVN_CCONNECTTYPE_CONNERR, chMsg,0,__FILE__,__LINE__,__FUNCTION__);
 			m_pWorker->m_Log.SetRunInfo(m_nLocalChannel, "连接主控失败.请求转发地址失败", __FILE__,__LINE__);
 	}
 	else
 	{
 			char chMsg[] = "request turnadddr fail !";
+//			strcpy(m_strConnectError,chMsg);
 			m_pWorker->ConnectChange(m_nLocalChannel,JVN_CCONNECTTYPE_CONNERR, chMsg,0,__FILE__,__LINE__,__FUNCTION__);
 			m_pWorker->m_Log.SetRunInfo(m_nLocalChannel, "connect failed. req turn addr fail", __FILE__,__LINE__);
 	}
