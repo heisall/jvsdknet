@@ -994,7 +994,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
                     {//接收数据
                         int nPWData = 0;
                         nret = pWorker->RecvPWCheck(nPWData);
-                        writeLog("ccoldchannel: RecvPWCheck nret: %d,line: %d",nret,__LINE__);
+//                        writeLog("ccoldchannel: RecvPWCheck nret: %d,line: %d",nret,__LINE__);
                         if(nret == 1)
                         {//验证通过 连接成功建立
                             OutputDebug("old pwd ok. line: %d",__LINE__);
@@ -1250,11 +1250,11 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
         else
         {//UDP连接
             m_pChannel->m_nFYSTVER = UDT::getystverF(m_pChannel->m_ServerSocket);//获取远端协议版本
-            writeLog("ccoldchannel: m_pChannel->m_nFYSTVER :%d,line: %d",m_pChannel->m_nFYSTVER,__LINE__);
+//            writeLog("ccoldchannel: m_pChannel->m_nFYSTVER :%d,line: %d",m_pChannel->m_nFYSTVER,__LINE__);
             if(m_pChannel->m_nFYSTVER >= JVN_YSTVER4)
             {//支持msg
                 rs = UDT::recvmsg(m_pChannel->m_ServerSocket, (char *)m_precBuf, JVNC_DATABUFLEN);
-                writeLog("ccoldchannel rs: %d, line: %d",rs,__LINE__);
+//                writeLog("ccoldchannel rs: %d, line: %d",rs,__LINE__);
                 if(0 < rs)
                 {//收到数据
                     nLen=-1;
@@ -1547,7 +1547,7 @@ CCOldChannel::CCOldChannel(CCWorker *pWorker, CCChannel *pChannel, BOOL bIMMO)
             }
             
         }
-        writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
+//        writeLog("ccoldchannel RecvPWCheck return -1 line: %d",__LINE__);
         return -1;
     }
     

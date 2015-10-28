@@ -3763,7 +3763,7 @@ void CCChannel::DealWaitIndexSerRSP(STCONNPROCP *pstConn)
         {	
 #ifdef MOBILE_CLIENT
           //  g_dbg.jvcout(OUT_ON_EVENT,__FILE__,__LINE__,__FUNCTION__,"JOV lib nRecvLen:%d, type:0x%x!\n", nRecvLen, nType);
-			writeLog("...........******........no find online svr return, online svrnum:%d,totao:%d",m_SList.size(),m_GroupSvrList.addrlist.size());
+			writeLog("...........******........no find online svr return, online svrnum:%d,totao:%d pword %d",m_SList.size(),m_GroupSvrList.addrlist.size(),m_bPassWordErr);
 			if((m_SList.size() > 0) && (!m_bPassWordErr))
 			{
 				if(m_GroupSvrList.addrlist.size() == 0)
@@ -4621,7 +4621,7 @@ void CCChannel::DealWaitIndexSerRSP(STCONNPROCP *pstConn)
         while(TRUE)
         {
 #ifndef WIN32
-
+            if(pWorker->m_bExit || pWorker->m_bEndC)
             {
                 break;
             }

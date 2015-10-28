@@ -22,6 +22,7 @@ extern bool isWriteLog;
 char g_chLocalPath[200] = {0};
 void writeLog(char* format, ...)
 {
+    return;
 #ifdef MOBILE_CLIENT
   if (isWriteLog) 
 	{
@@ -75,6 +76,8 @@ CCWorker::CCWorker()
 }
 CCWorker::CCWorker(int nLocalStartPort)
 {
+    
+    printf("constructor cworker!");
     m_pUpnpCtrl = NULL;
     m_pHelpCtrl = NULL;
     m_stVersion.sver1 = 2;
@@ -9336,7 +9339,7 @@ void CCWorker::GetGroupSvrList(char* chGroup,CYstSvrList &grouplist)
         return;
     }
     int size = m_YstSvrList.size();
-    writeLog(".......................size %d",size);
+    writeLog(".......................size %d line %d",size,__LINE__);
     if(size < 1)
     {
         int ret = ReadSerListInFile(chGroup,grouplist.addrlist);
