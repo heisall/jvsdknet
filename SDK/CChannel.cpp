@@ -590,10 +590,12 @@ void CCChannel::StartConnThread()
         }
         else
         {//连接失败，直接结束连接过程
+            writeLog("m_nStatus %d",m_nStatus);
 		if(m_nStatus == NEW_VIRTUAL_IP)
 			{//如果使用的经验ip，应该按正常流程再进行而不是直接结束
 	#ifdef MOBILE_CLIENT
-            
+                writeLog("*************recome*********** line %d",__LINE__);
+                
 /****************************************************************************/
                 m_nReconnectTimes ++;
  //               m_nReconnectTimes =5;

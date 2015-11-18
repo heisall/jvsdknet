@@ -22,7 +22,7 @@ extern bool isWriteLog;
 char g_chLocalPath[200] = {0};
 void writeLog(char* format, ...)
 {
-    return;
+//    return;
 #ifdef MOBILE_CLIENT
   if (isWriteLog) 
 	{
@@ -113,7 +113,7 @@ CCWorker::CCWorker(int nLocalStartPort)
     m_nLocalPortWan = 0;
     m_LocalIPList.clear();
     
-    m_nGroupCount = 3;
+    m_nGroupCount = 23;
     for(int i=0; i<50; i++)
     {
         memset(m_chGroupList[i], 0, 4);
@@ -132,10 +132,32 @@ CCWorker::CCWorker(int nLocalStartPort)
 	strcpy(list.chGroup,"S");
 	list.addrlist.clear();
 	m_YstSvrList.push_back(list);
+    
     strcpy(m_chGroupList[0],"A");
     strcpy(m_chGroupList[1],"B");
     strcpy(m_chGroupList[2],"S");
-    
+    strcpy(m_chGroupList[3],"H");
+    strcpy(m_chGroupList[4],"C");
+    strcpy(m_chGroupList[5],"V");
+    strcpy(m_chGroupList[6],"D");
+    strcpy(m_chGroupList[7],"SC");
+    strcpy(m_chGroupList[8],"SD");
+    strcpy(m_chGroupList[9],"SE");
+    strcpy(m_chGroupList[10],"SF");
+    strcpy(m_chGroupList[11],"SH");
+    strcpy(m_chGroupList[12],"ST");
+    strcpy(m_chGroupList[13],"SK");
+    strcpy(m_chGroupList[14],"SL");
+    strcpy(m_chGroupList[15],"SN");
+    strcpy(m_chGroupList[16],"SP");
+    strcpy(m_chGroupList[17],"SQ");
+    strcpy(m_chGroupList[18],"SW");
+    strcpy(m_chGroupList[19],"SY");
+    strcpy(m_chGroupList[20],"SV");
+    strcpy(m_chGroupList[21],"SG");
+    strcpy(m_chGroupList[22],"N");
+
+
 #ifndef WIN32
     printf("jvclient************%s\n",JVCLIENT_VERSION);
     
@@ -229,7 +251,7 @@ CCWorker::CCWorker(int nLocalStartPort, char* pfWriteReadData)
     m_nLocalPortWan = 0;
     m_LocalIPList.clear();
     
-    m_nGroupCount = 3;
+    m_nGroupCount = 23;
     for(int i=0; i<50; i++)
     {
         memset(m_chGroupList[i], 0, 4);
@@ -237,6 +259,26 @@ CCWorker::CCWorker(int nLocalStartPort, char* pfWriteReadData)
     strcpy(m_chGroupList[0],"A");
     strcpy(m_chGroupList[1],"B");
     strcpy(m_chGroupList[2],"S");
+    strcpy(m_chGroupList[3],"H");
+    strcpy(m_chGroupList[4],"C");
+    strcpy(m_chGroupList[5],"V");
+    strcpy(m_chGroupList[6],"D");
+    strcpy(m_chGroupList[7],"SC");
+    strcpy(m_chGroupList[8],"SD");
+    strcpy(m_chGroupList[9],"SE");
+    strcpy(m_chGroupList[10],"SF");
+    strcpy(m_chGroupList[11],"SH");
+    strcpy(m_chGroupList[12],"ST");
+    strcpy(m_chGroupList[13],"SK");
+    strcpy(m_chGroupList[14],"SL");
+    strcpy(m_chGroupList[15],"SN");
+    strcpy(m_chGroupList[16],"SP");
+    strcpy(m_chGroupList[17],"SQ");
+    strcpy(m_chGroupList[18],"SW");
+    strcpy(m_chGroupList[19],"SY");
+    strcpy(m_chGroupList[20],"SV");
+    strcpy(m_chGroupList[21],"SG");
+    strcpy(m_chGroupList[22],"N");
     
 #ifndef WIN32
     printf("jvclient************%s\n",JVCLIENT_VERSION);
@@ -3741,50 +3783,50 @@ UINT WINAPI CCWorker::GTProc(LPVOID pParam)
     {
         pWorker->GetDemoList(2);
     }
-    
+    int l = 0;
+    for(l=0; l<pWorker->m_nGroupCount; l++)
+    {
+        std::vector<STSIP> IPList;
+        
+        if(!pWorker->IndexServerList_Download(pWorker->m_chGroupList[l], IPList, 1, 0))
+        {
+            if(pWorker->IndexServerList_Download(pWorker->m_chGroupList[l], IPList, 2, 0))
+            {
+                pWorker->IndexServerList_Save(pWorker->m_chGroupList[l], IPList);
+                STGROUP stg;
+                memcpy(stg.chgroup, pWorker->m_chGroupList[l], 4);
+                pWorker->m_IndexGroupList.push_back(stg);
+                //				OutputDebug("Download index server %s.%d",pWorker->m_chGroupList[l],__LINE__);
+            }
+        }
+        else
+        {
+            pWorker->IndexServerList_Save(pWorker->m_chGroupList[l], IPList);
+            STGROUP stg;
+            memcpy(stg.chgroup, pWorker->m_chGroupList[l], 4);
+            pWorker->m_IndexGroupList.push_back(stg);
+            //			OutputDebug("Download index server %s.%d",pWorker->m_chGroupList[l],__LINE__);
+        }
+    }
     if(!pWorker->DownLoadFile(JVN_WEBSITE1,"/down/yst/YST_server.txt","server.txt","[Group]"))
     {
         if(!pWorker->DownLoadFile(JVN_WEBSITE2,"/down/yst/YST_server.txt","server.txt","[Group]"))
         {
-            int l = 0;
-            for(l=0; l<pWorker->m_nGroupCount; l++)
-            {
-                std::vector<STSIP> IPList;
-                
-                if(!pWorker->IndexServerList_Download(pWorker->m_chGroupList[l], IPList, 1, 0))
-                {
-                    if(pWorker->IndexServerList_Download(pWorker->m_chGroupList[l], IPList, 2, 0))
-                    {
-                        pWorker->IndexServerList_Save(pWorker->m_chGroupList[l], IPList);
-                        STGROUP stg;
-                        memcpy(stg.chgroup, pWorker->m_chGroupList[l], 4);
-                        pWorker->m_IndexGroupList.push_back(stg);
-                        //				OutputDebug("Download index server %s.%d",pWorker->m_chGroupList[l],__LINE__);
-                    }
-                }
-                else
-                {
-                    pWorker->IndexServerList_Save(pWorker->m_chGroupList[l], IPList);
-                    STGROUP stg;
-                    memcpy(stg.chgroup, pWorker->m_chGroupList[l], 4);
-                    pWorker->m_IndexGroupList.push_back(stg);
-                    //			OutputDebug("Download index server %s.%d",pWorker->m_chGroupList[l],__LINE__);
-                }
-            }
-            ServerList SList;
-            for(l=0; l<pWorker->m_nGroupCount; l++)
-            {
-                if(!pWorker->DownLoadFirst(pWorker->m_chGroupList[l], SList, 1, 0))
-                {
-                    pWorker->DownLoadFirst(pWorker->m_chGroupList[l], SList, 2, 0);
-                    
-					//			OutputDebug("Download server %s.%d",pWorker->m_chGroupList[l],__LINE__);
-                }
-                else
-                {
-					//			OutputDebug("Download server %s.%d",pWorker->m_chGroupList[l],__LINE__);
-                }
-            }
+
+//            ServerList SList;
+//            for(l=0; l<pWorker->m_nGroupCount; l++)
+//            {
+//                if(!pWorker->DownLoadFirst(pWorker->m_chGroupList[l], SList, 1, 0))
+//                {
+//                    pWorker->DownLoadFirst(pWorker->m_chGroupList[l], SList, 2, 0);
+//                    
+//					//			OutputDebug("Download server %s.%d",pWorker->m_chGroupList[l],__LINE__);
+//                }
+//                else
+//                {
+//					//			OutputDebug("Download server %s.%d",pWorker->m_chGroupList[l],__LINE__);
+//                }
+//            }
         }
         else
         {
@@ -3798,7 +3840,6 @@ UINT WINAPI CCWorker::GTProc(LPVOID pParam)
     }
     
     //////////////////////////////////////////////////////////////////////////
-    int l = 0;
      ServerList SList;
 	for(l=0; l<pWorker->m_nGroupCount; l++)
 	{
@@ -7114,6 +7155,7 @@ BOOL CCWorker::IndexServerList_Save(char chGroup[4], std::vector<STSIP> &IPList)
         char stName[200] = {0};
         sprintf(stName, "%s%s.dat","INDEX_",chGroup);
         WriteMobileFile(stName,(char* )writeBuffer,writeLen);
+//        WriteMobileFile(acBuff,(char* )writeBuffer,writeLen);
 #else
         FILE *pfile = NULL;
         
@@ -7472,7 +7514,7 @@ void CCWorker::WriteMobileFile(char* strName,char* pData,int nLen)
 {
     char strFileName[MAX_PATH] = {0};
     sprintf(strFileName,"%s/%s",m_chLocalPath,strName);
-//    printf("WriteMobileFile url: %s\n",strFileName);
+    printf("WriteMobileFile url: %s\n",strFileName);
     FILE* file = fopen(strFileName, "w+");
     if(file)
     {

@@ -18,7 +18,7 @@
 #define JVN_CHUNK_PRIVATE  20//保留的数据块数目，这些块不对外公布，仅用于补救那些太落后的请求
 #define JVN_CHUNK_LEN      16384//每个数据块的大小 <<<注：主分控必须统一>>>
 //#define JVN_BUF_MINM       10240000//多播方式时 内存方式需要的最小内存大小
-#define JVN_BUF_MINS       8192000//800000//819200//普通方式时 需要的最小内存大小
+#define JVN_BUF_MINS       4096000//800000//819200//普通方式时 需要的最小内存大小
 #ifndef WIN32
 	#define JVN_BUF_MINM       1024000//10240000//多播方式时 内存方式需要的最小内存大小
 #else

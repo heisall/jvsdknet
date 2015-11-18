@@ -285,6 +285,7 @@ void CCVirtualChannel::StartConnThread()
         pstConn->dwendtime = CCWorker::JVGetTime();
         if(pstConn->dwendtime > m_dwStartTime + 2500 || (pstConn->slisttmp.size() == m_SList.size()) )//2000
         {//等待超时或已接受全部应答
+//            printf("pstConn->udpsocktmp %d\n",pstConn->udpsocktmp);
             shutdown(pstConn->udpsocktmp,SD_BOTH);
             closesocket(pstConn->udpsocktmp);
             pstConn->udpsocktmp = 0;
