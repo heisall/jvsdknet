@@ -340,6 +340,10 @@ public:
     
     int SendRemoveServer(char* pGroup,int nYst,char* pServer,int *nLen,int nTimeOut);
     
+    BOOL StartBCSelfServer(int nLPort, int nServerPort);
+    void StopBCSelfServer();
+    BOOL DoBroadcastSelf(BYTE *pBuffer, int nSize, int nTimeOut);
+    BOOL DoSendSelfDataFromBC(BYTE *pBuffer, int nSize, char *pchDeviceIP, int nLocalPort);
     
     CDEFINE_SERVER m_CSelfDefineServer;
     
@@ -364,7 +368,8 @@ public://///////////////////////////////////////////////////////////////////
     FUNC_CLANSDATA_CALLBACK m_pfLANSData;
     FUNC_CBCDATA_CALLBACK m_pfBCData;
     FUNC_CLANTDATA_CALLBACK m_pfLANTData;
-    
+    FUNC_CBCSELFDATA_CALLBACK m_pfBCSelfData;
+
     FUNC_COMM_DATA_CALLBACK m_pfWriteReadData;
     
     CRunLog m_Log;
@@ -440,6 +445,8 @@ private:////////////////////////////////////////////////////////////////////////
     /*æ÷”ÚÕ¯…˙≤˙π§æﬂœ‡πÿ*/
     CCLanTool *m_pLanTool;
     DWORD m_dwLastLANToolTime;//…œ¥ŒÀ—À˜ ±º‰
+    
+    CCLanSerch *m_pBCSelf;
     
     char m_chLocalPath[MAX_PATH];//±æµÿ¬∑æ∂
     

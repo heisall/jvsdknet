@@ -178,7 +178,7 @@
 		A79B34601B28023F0000942E /* CWorker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CWorker.cpp; path = SDK/CWorker.cpp; sourceTree = SOURCE_ROOT; };
 		A79B34611B28023F0000942E /* CWorker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CWorker.h; path = SDK/CWorker.h; sourceTree = SOURCE_ROOT; };
 		A79B34631B28023F0000942E /* JvClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JvClient.cpp; path = SDK/JvClient.cpp; sourceTree = SOURCE_ROOT; };
-		A79B34641B28023F0000942E /* JvClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = JvClient.h; path = SDK/JvClient.h; sourceTree = SOURCE_ROOT; };
+		A79B34641B28023F0000942E /* JvClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JvClient.h; path = SDK/JvClient.h; sourceTree = SOURCE_ROOT; };
 		A79B34651B28023F0000942E /* JVN_DBG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JVN_DBG.cpp; path = SDK/JVN_DBG.cpp; sourceTree = SOURCE_ROOT; };
 		A79B34661B28023F0000942E /* JVN_DBG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JVN_DBG.h; path = SDK/JVN_DBG.h; sourceTree = SOURCE_ROOT; };
 		A79B34671B28023F0000942E /* JVNError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JVNError.h; path = SDK/JVNError.h; sourceTree = SOURCE_ROOT; };

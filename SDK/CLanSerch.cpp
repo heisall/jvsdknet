@@ -1,4 +1,4 @@
-// CLanSerch.cpp: implementation of the CCLanSerch class.
+ // CLanSerch.cpp: implementation of the CCLanSerch class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -1232,6 +1232,31 @@ UINT CCLanSerch::LANSRcvProc(LPVOID pParam)
         stLSResult.nPrivateSize = 0;
         memset(recBuf, 0, RC_DATA_SIZE);
         nRecvLen = CCChannel::receivefrom(pWorker->m_SocketLANS,(char *)&recBuf, RC_DATA_SIZE, 0, (SOCKADDR*)&clientaddr,&addrlen,1);
+        
+        char ip[20] = {0};
+        int nBCPort = 0;
+        if(nRecvLen > 0)
+        {
+            sprintf(ip, "%s", inet_ntoa(clientaddr.sin_addr));
+            nBCPort = htons(clientaddr.sin_port);
+        }
+        if(pWorker->m_nType == JVC_BC_SELF)
+        {
+            if(nRecvLen > 0)
+            {
+                int nType = 0; memcpy(&nType, &recBuf[0], 4);//类型
+                //				writeLog("before callback type %d ip %s port %d",nType,ip,nBCPort);
+                pWorker->m_pWorker->m_pfBCSelfData(recBuf, nRecvLen, ip, nBCPort, nType);
+                //				pWorker->m_pWorker->m_pfBCSelfData(recBuf, nRecvLen, ip, nBCPort);
+            }
+            else
+            {
+                //				writeLog("receive data ip %s port %d",ip,nBCPort);
+                CCWorker::jvc_sleep(10);
+            }
+            continue;//是自定义广播接收只执行到此，不执行设备搜索代码
+        }
+        
         if(pWorker->m_nType == JVC_BC)
         {//接收：类型(1)+长度(4)+广播ID(4)+净载数据(?)
             if( nRecvLen > 0)
@@ -1864,4 +1889,46 @@ BOOL CCLanSerch::IsPause()
     }
     return FALSE;
     
+}
+
+BOOL CCLanSerch::SendSelfDataFromBC(BYTE *pBuffer, int nSize, char *pchDeviceIP, int nDestPort)
+{
+    
+#ifndef MOBILE_CLIENT
+    if(m_hLANSerchRcvThread <= 0 || m_SocketLANS <= 0)
+    {
+        writeLog("m_hLANSerchRcvThread %d m_SocketLANS %d",m_hLANSerchRcvThread,m_SocketLANS);
+        return FALSE;
+    }
+#endif
+    
+    if(nSize <= 0 || nSize > 10240)
+    {
+        return FALSE;
+    }
+    
+    if(m_nType == JVC_BC_SELF)
+    {
+        SOCKADDR_IN addrBcast;
+        // 设置广播地址，这里的广播端口号
+        addrBcast.sin_family = AF_INET;
+        addrBcast.sin_addr.s_addr = inet_addr(pchDeviceIP); // ::inet_addr("255.255.255.255");
+        addrBcast.sin_port = htons(nDestPort);
+        
+        int ntmp = CCChannel::sendtoclient(m_SocketLANS,(char *)pBuffer,nSize,0,(SOCKADDR *)&addrBcast, sizeof(SOCKADDR),1);
+        
+        m_bTimeOut = FALSE;
+        m_bLANSerching = TRUE;
+        m_dwBeginSerch = CCWorker::JVGetTime();
+        if(ntmp != nSize)
+        {
+//            writeLog("ntmp %d nsize %d",ntmp,nSize);
+            
+            return FALSE;
+        }
+        return TRUE;
+    }
+    
+//    writeLog("return false ");
+    return FALSE;
 }

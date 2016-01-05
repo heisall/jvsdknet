@@ -566,6 +566,7 @@ typedef void (*FUNC_CBUFRATE_CALLBACK)(int nLocalChannel, unsigned char uchType,
 typedef void (*FUNC_CLANSDATA_CALLBACK)(STLANSRESULT stLSResult);
 typedef void (*FUNC_CBCDATA_CALLBACK)(int nBCID, unsigned char *pBuffer, int nSize, char chIP[16], BOOL bTimeOut);
 typedef int (*FUNC_CLANTDATA_CALLBACK)(STLANTOOLINFO *pLANTData);
+typedef void (*FUNC_CBCSELFDATA_CALLBACK)(unsigned char *pBuffer, int nSize, char chIP[16], int nPort,int nType);
 
 typedef int (*FUNC_DEVICE_CALLBACK)(STLANSRESULT*);
 

@@ -18,6 +18,8 @@
 #define MAX_IPSEC_NUM    10 //默认设置最大的IPSECTION 10个
 #define SLEEP_PER_TIME    50 //默认设置每次sleep(50);
 #pragma pack(4)
+#define  JVC_BC_SELF   2
+
 // IP头首部结构
 struct IpHeader
 {
@@ -65,7 +67,8 @@ public:
     void SearchFSIpSection();//搜索数组中的设备,
     int  AddFSIpSection(const IPSECTION * Ipsection ,int nSize ,BOOL bEnablePing );//添加待搜索IP段;
     BOOL Broadcast(int nBCID, BYTE *pBuffer, int nSize, int nTimeOut);
-    
+    BOOL SendSelfDataFromBC(BYTE *pBuffer, int nSize, char *pchDeviceIP, int nDestPort);
+
     BOOL m_bPause[256];//暂停的通道
     BOOL IsPause();
     

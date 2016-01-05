@@ -231,6 +231,7 @@ CCWorker::CCWorker(int nLocalStartPort, char* pfWriteReadData)
     m_pLanSerch = NULL;
     m_pBC = NULL;
     m_pLanTool = NULL;
+    m_pBCSelf = NULL;
     m_dwLastLANToolTime = 0;
     
     m_dwLastTime = 0;
@@ -7514,7 +7515,7 @@ void CCWorker::WriteMobileFile(char* strName,char* pData,int nLen)
 {
     char strFileName[MAX_PATH] = {0};
     sprintf(strFileName,"%s/%s",m_chLocalPath,strName);
-    printf("WriteMobileFile url: %s\n",strFileName);
+//    printf("WriteMobileFile url: %s\n",strFileName);
     FILE* file = fopen(strFileName, "w+");
     if(file)
     {
@@ -9539,3 +9540,65 @@ int  CCWorker::ReadSerListInFile(char chGroup[4],ServerList &list)
     return nSerCount;
 }
 
+BOOL CCWorker::StartBCSelfServer(int nLPort, int nServerPort)
+{
+    int nport = 0;
+    int nsport = 0;
+    if(nLPort >= 0)
+    {
+        nport = nLPort;
+    }
+    
+    if(nServerPort > 0)
+    {
+        nsport = nServerPort;
+    }
+    
+    if(m_pBCSelf != NULL)
+    {
+        return TRUE;
+    }
+    
+    m_pBCSelf = new CCLanSerch(nport, nsport, this, JVC_BC_SELF);
+    if(m_pBCSelf != NULL)
+    {
+        if(m_pBCSelf->m_bOK)
+        {
+            return TRUE;
+        }
+        delete m_pBCSelf;
+        m_pBCSelf = NULL;
+        return FALSE;
+    }
+    else
+    {
+        return FALSE;
+    }
+}
+
+void CCWorker::StopBCSelfServer()
+{
+    if(m_pBCSelf != NULL)
+    {
+        delete m_pBCSelf;
+    }
+    m_pBCSelf = NULL;
+}
+
+BOOL CCWorker::DoBroadcastSelf(BYTE *pBuffer, int nSize, int nTimeOut)
+{
+    if(m_pBCSelf == NULL)
+    {
+        return FALSE;
+    }
+    return m_pBCSelf->Broadcast(0, pBuffer, nSize, nTimeOut);
+}
+
+BOOL CCWorker::DoSendSelfDataFromBC(BYTE *pBuffer, int nSize, char *pchDeviceIP, int nDestPort)
+{
+    if(m_pBCSelf == NULL)
+    {
+        return FALSE;
+    }
+    return m_pBCSelf->SendSelfDataFromBC(pBuffer, nSize, pchDeviceIP, nDestPort);
+}
